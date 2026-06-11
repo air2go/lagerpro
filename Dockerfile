@@ -1,31 +1,26 @@
-FROM python:3.11-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Installiere System-Dependencies
-RUN apt-get update && apt-get install -y \
-    nodejs \
-    npm \
-    sqlite3 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apk add --no-cache python3 make g++ curl
 
-# Kopiere Backend
-COPY backend/ ./backend/
-COPY frontend/ ./frontend/
+# Copy application code
+COPY . .
 
-# Installiere Python Dependencies (falls vorhanden)
-RUN if [ -f requirements.txt ]; then pip install --no-cache-dir -r requirements.txt; fi
+# Install Node.js dependencies (production only)
+RUN cd backend && npm install --production && cd ..
 
-# Installiere Node Dependencies
-RUN cd backend && npm install && cd ..
-
-# Expose Port
+# Expose port
 EXPOSE 3000
 
-# Health Check
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:3000 || exit 1
 
-# Start Application
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Start application
 CMD ["node", "backend/server.js"]
