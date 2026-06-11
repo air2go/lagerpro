@@ -2,17 +2,29 @@ version: '3.8'
 
 services:
   lagerpro:
-    image: air2go/lagerpro:latest
+    image: node:20-alpine
     container_name: lagerpro
+    working_dir: /app
+    command: >
+      sh -c "
+        apk add --no-cache python3 make g++ &&
+        cd /app/backend &&
+        npm install --production &&
+        node server.js
+      "
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - DB_PATH=/data/lager.db
       - JWT_SECRET=AENDERN_SIE_DIESEN_SCHLUESSEL_VOR_DEM_START
+      - PORT=3000
+      - NODE_ENV=production
     volumes:
-      - lagerpro_data:/app/data
-      - lagerpro_db:/app/backend/data
+      - lagerpro_data:/data
+      - /volume2/docker/lagerpro/lager-app:/app:rw
     restart: unless-stopped
+    networks:
+      - lagerpro_default
     logging:
       driver: "json-file"
       options:
@@ -22,5 +34,7 @@ services:
 volumes:
   lagerpro_data:
     driver: local
-  lagerpro_db:
-    driver: local
+
+networks:
+  lagerpro_default:
+    driver: bridge
