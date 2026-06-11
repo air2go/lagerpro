@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  lagerpro:
+    image: air2go/lagerpro:latest
+    container_name: lagerpro
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=AENDERN_SIE_DIESEN_SCHLUESSEL_VOR_DEM_START
+    volumes:
+      - lagerpro_data:/app/data
+      - lagerpro_db:/app/backend/data
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  lagerpro_data:
+    driver: local
+  lagerpro_db:
+    driver: local
